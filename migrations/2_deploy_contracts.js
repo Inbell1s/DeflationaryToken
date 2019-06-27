@@ -1,6 +1,6 @@
-var BURNT = artifacts.require('BURNT');
+var Degare = artifacts.require('Degare');
 
 module.exports = function(deployer) {
-	deployer.deploy(BURNT)
+	deployer.deploy(Degare)
   // Use deployer to state migration tasks.
 };

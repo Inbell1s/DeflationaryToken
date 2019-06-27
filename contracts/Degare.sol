@@ -2,15 +2,15 @@ pragma solidity ^0.5.0;
 
 import "./ERC20.sol";
 
-contract BURNT is ERC20Detailed {
+contract Degare is ERC20Detailed {
 
    using SafeMath for uint256;
     mapping (address => uint256) private _balances;
     mapping (address => uint256) private _adminBalances;
     mapping (address => mapping (address => uint256)) private _allowed;
     
-    string constant tokenName = "Burnt token";
-    string constant tokenSymbol = "BURNT";
+    string constant tokenName = "Degare";
+    string constant tokenSymbol = "DGR";
     uint8  constant tokenDecimals = 0;
     
     uint256 _totalSupply = 2000000;
@@ -20,40 +20,51 @@ contract BURNT is ERC20Detailed {
     uint256 public buyPercent = 500;
     uint256 public sellPercent = 1000;
     //2 months in seconds 5259492
-    uint256 private _releaseTime = 20;
-
+    uint256 private _releaseTime = 5259492;
+    uint256 private _released;
 
     address public contractOwner;
     address constant public myAddress = 0xaDd95571e0EbA2dB70bb2A19B3B61cc803A20A2b;
     
     
     constructor() public payable ERC20Detailed(tokenName, tokenSymbol, tokenDecimals) {
-         contractOwner = msg.sender;
+        _released = block.timestamp+_releaseTime;
+		 contractOwner = msg.sender;
         _mint(msg.sender, _OwnerSupply);
         _mint(myAddress, _CTOSupply);
     }
-
+	
     modifier isOwner(){
        require(msg.sender == contractOwner, "Unauthorised Sender");
         _;
     }
-    
+   /**
+  * @dev Total number of tokens in existence
+  */
   function totalSupply() public view returns (uint256) {
     return _totalSupply;
   }
-
-  function myBalance() public view returns(uint256) {
-      return _balances[msg.sender];
+  /**
+  * @dev Returns when the Admin Funds will be released in seconds
+  */
+  function released() public view returns (uint256) {
+    return _released;
   }
-  
-  function myAdminBalance() public view returns(uint256) {
-      return _adminBalances[msg.sender];
-  }
-  
+    
+  /**
+  * @dev Gets the Admin balance of the specified address.
+  * @param adminAddress The address to query the balance of.
+  * @return An uint256 representing the amount owned by the passed address.
+  */
   function adminBalance(address adminAddress) public view returns(uint256) {
       return _adminBalances[adminAddress];
   }
   
+  /**
+  * @dev Gets the balance of the specified address.
+  * @param user The address to query the balance of.
+  * @return An uint256 representing the amount owned by the passed address.
+  */
   function balanceOf(address user) public view returns (uint256) {
     return _balances[user];
   }
@@ -87,14 +98,15 @@ contract BURNT is ERC20Detailed {
  
     //Send Locked token to contract only Owner Can do so its pointless for anyone else
     function sendLockedToken(address beneficiary, uint256 value) public isOwner{
-        require(block.timestamp+_releaseTime > block.timestamp, "TokenTimelock: release time is before current time");
-            _balances[msg.sender] = _balances[msg.sender].sub(value);
-            _adminBalances[beneficiary] = value;
+        require(_released > block.timestamp, "TokenTimelock: release time is before current time");
+		require(value <= _balances[msg.sender]);
+		_balances[msg.sender] = _balances[msg.sender].sub(value);
+		_adminBalances[beneficiary] = value;
     }
     
     //Anyone Can Release The Funds after 2 months
     function release() public returns(bool){
-        require(block.timestamp >= _releaseTime, "TokenTimelock: current time is before release time");
+        require(block.timestamp >= _released, "TokenTimelock: current time is before release time");
         uint256 value = _adminBalances[msg.sender];
         require(value > 0, "TokenTimelock: no tokens to release");
         _balances[msg.sender] = _balances[msg.sender].add(value);
@@ -102,7 +114,11 @@ contract BURNT is ERC20Detailed {
 		 return true;
     }
   
-  
+  /**
+  * @dev Transfer token for a specified address
+  * @param to The address to transfer to.
+  * @param value The amount to be transferred.
+  */
   //To be Used by users to trasnfer tokens and burn while doing so
   function transfer(address to, uint256 value) public returns (bool) {
     require(value <= _balances[msg.sender],"Not Enough Tokens in Account");
@@ -134,7 +150,13 @@ contract BURNT is ERC20Detailed {
       transfer(receivers[i], amounts[i]);
     }
   }
-  
+   /**
+   * @dev Internal function that mints an amount of the token and assigns it to
+   * an account. This encapsulates the modification of balances such that the
+   * proper events are emitted.
+   * @param account The account that will receive the created tokens.
+   * @param amount The amount that will be created.
+   */
   function _mint(address account, uint256 amount) internal {
     require(amount != 0);
     _balances[account] = _balances[account].add(amount);
@@ -145,7 +167,12 @@ contract BURNT is ERC20Detailed {
      require(amount <= _balances[msg.sender],"Not Enough Tokens in Account");
     _burn(msg.sender, amount);
   }
-
+ /**
+   * @dev Internal function that burns an amount of the token of a given
+   * account.
+   * @param account The account whose tokens will be burnt.
+   * @param amount The amount that will be burnt.
+   */
   function _burn(address account, uint256 amount) internal {
     require(amount != 0);
     require(amount <= _balances[account]);
@@ -153,25 +180,50 @@ contract BURNT is ERC20Detailed {
     _balances[account] = _balances[account].sub(amount);
     emit Transfer(account, address(0), amount);
   }
-
+  /**
+   * @dev Internal function that burns an amount of the token of a given
+   * account, deducting from the sender's allowance for said account. Uses the
+   * internal burn function.
+   * @param account The account whose tokens will be burnt.
+   * @param amount The amount that will be burnt.
+   */	
   function burnFrom(address account, uint256 amount) external {
     require(amount <= _allowed[account][msg.sender]);
     _allowed[account][msg.sender] = _allowed[account][msg.sender].sub(amount);
     _burn(account, amount);
   }
   
+    /**
+   * @dev Function to check the amount of tokens that an owner allowed to a spender.
+   * @param owner address The address which owns the funds.
+   * @param spender address The address which will spend the funds.
+   * @return A uint256 specifying the amount of tokens still available for the spender.
+   */
   function allowance(address owner, address spender) public view returns (uint256) {
     return _allowed[owner][spender];
   }
-  
-  
+ 
+  /**
+   * @dev Approve the passed address to spend the specified amount of tokens on behalf of msg.sender.
+   * Beware that changing an allowance with this method brings the risk that someone may use both the old
+   * and the new allowance by unfortunate transaction ordering. One possible solution to mitigate this
+   * race condition is to first reduce the spender's allowance to 0 and set the desired value afterwards:
+   * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+   * @param spender The address which will spend the funds.
+   * @param value The amount of tokens to be spent.
+   */
   function approve(address spender, uint256 value) public returns (bool) {
     require(spender != address(0));
     _allowed[msg.sender][spender] = value;
     emit Approval(msg.sender, spender, value);
     return true;
   }
-  
+   /**
+   * @dev Transfer tokens from one address to another
+   * @param from address The address which you want to send tokens from
+   * @param to address The address which you want to transfer to
+   * @param value uint256 the amount of tokens to be transferred
+   */
   function transferFrom(address from, address to, uint256 value) public returns (bool) {
     require(value <= _balances[from]);
     require(value <= _allowed[from][msg.sender]);
@@ -180,7 +232,12 @@ contract BURNT is ERC20Detailed {
     //Delete balance of this account
     _balances[from] = _balances[from].sub(value);
     
-    uint256 tokensToBurn = findPercent(value);
+	uint256 tokensToBurn;
+	if(value < 10){
+	    tokensToBurn = 1;
+	}else{
+	    tokensToBurn = findPercent(value);
+	}	
     uint256 tokensToTransfer = value.sub(tokensToBurn);
 
     _balances[to] = _balances[to].add(tokensToTransfer);
@@ -193,7 +250,15 @@ contract BURNT is ERC20Detailed {
 
     return true;
   }
-  
+   /**
+   * @dev Increase the amount of tokens that an owner allowed to a spender.
+   * approve should be called when allowed_[_spender] == 0. To increment
+   * allowed value is better to use this function to avoid 2 calls (and wait until
+   * the first transaction is mined)
+   * From MonolithDAO Token.sol
+   * @param spender The address which will spend the funds.
+   * @param addedValue The amount of tokens to increase the allowance by.
+   */
   function increaseAllowance(address spender, uint256 addedValue) public returns (bool) {
     require(spender != address(0));
     _allowed[msg.sender][spender] = (_allowed[msg.sender][spender].add(addedValue));
@@ -201,6 +266,15 @@ contract BURNT is ERC20Detailed {
     return true;
   }
 
+  /**
+   * @dev Decrease the amount of tokens that an owner allowed to a spender.
+   * approve should be called when allowed_[_spender] == 0. To decrement
+   * allowed value is better to use this function to avoid 2 calls (and wait until
+   * the first transaction is mined)
+   * From MonolithDAO Token.sol
+   * @param spender The address which will spend the funds.
+   * @param subtractedValue The amount of tokens to decrease the allowance by.
+   */
   function decreaseAllowance(address spender, uint256 subtractedValue) public returns (bool) {
     require(spender != address(0));
     _allowed[msg.sender][spender] = (_allowed[msg.sender][spender].sub(subtractedValue));
