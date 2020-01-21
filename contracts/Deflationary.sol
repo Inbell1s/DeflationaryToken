@@ -2,14 +2,14 @@ pragma solidity ^0.5.0;
 
 import "./ERC20.sol";
 
-contract Degare is ERC20Detailed {
+contract Deflationary is ERC20Detailed {
 
    using SafeMath for uint256;
     mapping (address => uint256) private _balances;
     mapping (address => uint256) private _adminBalances;
     mapping (address => mapping (address => uint256)) private _allowed;
     
-    string constant tokenName = "Degare";
+    string constant tokenName = "Deflationary";
     string constant tokenSymbol = "DGR";
     uint8  constant tokenDecimals = 0;
     
@@ -170,8 +170,8 @@ contract Degare is ERC20Detailed {
  /**
    * @dev Internal function that burns an amount of the token of a given
    * account.
-   * @param account The account whose tokens will be burnt.
-   * @param amount The amount that will be burnt.
+   * @param account The account whose tokens will be Deflationary.
+   * @param amount The amount that will be Deflationary.
    */
   function _burn(address account, uint256 amount) internal {
     require(amount != 0);
@@ -184,8 +184,8 @@ contract Degare is ERC20Detailed {
    * @dev Internal function that burns an amount of the token of a given
    * account, deducting from the sender's allowance for said account. Uses the
    * internal burn function.
-   * @param account The account whose tokens will be burnt.
-   * @param amount The amount that will be burnt.
+   * @param account The account whose tokens will be Deflationary.
+   * @param amount The amount that will be Deflationary.
    */	
   function burnFrom(address account, uint256 amount) external {
     require(amount <= _allowed[account][msg.sender]);
@@ -255,7 +255,6 @@ contract Degare is ERC20Detailed {
    * approve should be called when allowed_[_spender] == 0. To increment
    * allowed value is better to use this function to avoid 2 calls (and wait until
    * the first transaction is mined)
-   * From MonolithDAO Token.sol
    * @param spender The address which will spend the funds.
    * @param addedValue The amount of tokens to increase the allowance by.
    */
@@ -271,7 +270,6 @@ contract Degare is ERC20Detailed {
    * approve should be called when allowed_[_spender] == 0. To decrement
    * allowed value is better to use this function to avoid 2 calls (and wait until
    * the first transaction is mined)
-   * From MonolithDAO Token.sol
    * @param spender The address which will spend the funds.
    * @param subtractedValue The amount of tokens to decrease the allowance by.
    */

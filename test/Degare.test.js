@@ -1,4 +1,4 @@
-console.log('running BURNT.test.js');
+console.log('running Deflationary.test.js');
 
 console.log(web3.eth.getBalance);
 var assert = require('chai').assert
@@ -9,9 +9,9 @@ var accounts;
 // in web front-end, use an onload listener and similar to this manual flow ... 
 web3.eth.getAccounts(function(err,res) { accounts = res; });
 
-var Degare = artifacts.require("Degare");
+var Deflationary = artifacts.require("Deflationary");
 
-contract('Degare', async accounts=>{
+contract('Deflationary', async accounts=>{
 	const contractOwner = accounts[0];
 	const adminUser = accounts[1];
 	const randomUser1 = accounts[2];
@@ -19,7 +19,7 @@ contract('Degare', async accounts=>{
 	var ownerTokens =  1990000;
 	
 	beforeEach(async () => {
-        instance = await Degare.deployed("Degare","DGR",0,{from: contractOwner });
+        instance = await Deflationary.deployed("Deflationary","DGR",0,{from: contractOwner });
         //application =  await instance.createApplication(duration,interest,creditAmount ,{from: borrower1 });
         //loanApplication = await LoanApplication.at(application.logs[0].args.newLoanApplication);
     });
@@ -34,12 +34,12 @@ contract('Degare', async accounts=>{
         assert.equal(ownerTokens,application);
     });
 	
-	it("This should send 200 Burnt simple transfer to a randomUser1", async () => {
+	it("This should send 200 Deflationary simple transfer to a randomUser1", async () => {
         //sends the transfer
         assert.isOk(200,await instance.simpleTransfer(randomUser1,200,{from: contractOwner }));
-		//Checks if User has 200 BURNT Tokens
+		//Checks if User has 200 Deflationary Tokens
     	assert.equal(200,await instance.balanceOf(randomUser1));
-		//Checks if Owner has 200 less Burnt Tokens
+		//Checks if Owner has 200 less Deflationary Tokens
 		ownerTokens = ownerTokens-200
 		assert.equal(ownerTokens,await instance.balanceOf(contractOwner));
 	});
@@ -52,10 +52,10 @@ contract('Degare', async accounts=>{
 	   }).timeout(interval + 100) // The extra 100ms should guarantee the test will not fail due to exceeded timeout
 	}
 	
-	it("This should send 200 Locked Burnt simple transfer to a adminUser", async () => {
+	it("This should send 200 Locked Deflationary simple transfer to a adminUser", async () => {
         //sends the transfer
         assert.isOk(await instance.sendLockedToken(adminUser,200,{from: contractOwner }));
-		//Checks if Owner has 200 less Burnt Tokens
+		//Checks if Owner has 200 less Deflationary Tokens
 		ownerTokens = ownerTokens-200
 		assert.equal(ownerTokens,await instance.balanceOf(contractOwner));
 		//Admin balance should be stored here and should have 200
@@ -76,7 +76,7 @@ contract('Degare', async accounts=>{
 	});
 	/*
 	//This is a test to show that Realse works properly, This is commented out later
-	it("This should send 200 Locked Burnt simple transfer to a adminUser", async () => {
+	it("This should send 200 Locked Deflationary simple transfer to a adminUser", async () => {
 		//ADD THIS FUNCTION TO THE SMART CONTRACT TO BE ABLE TO Prove RELEASE WORKS
 		//FUNCTION START
 		function setReleased(uint256 newReleased) public{
@@ -85,7 +85,7 @@ contract('Degare', async accounts=>{
 		//FUNCTION END
         //sends the transfer
         assert.isOk(await instance.sendLockedToken(adminUser,200,{from: contractOwner }));
-		//Checks if Owner has 200 less Burnt Tokens
+		//Checks if Owner has 200 less Deflationary Tokens
 		ownerTokens = ownerTokens-200
 		assert.equal(ownerTokens,await instance.balanceOf(contractOwner));
 		//Admin balance should be stored here and should have 200

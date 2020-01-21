@@ -1,6 +1,6 @@
-var Degare = artifacts.require('Degare');
+var Deflationary = artifacts.require('Deflationary');
 
 module.exports = function(deployer) {
-	deployer.deploy(Degare)
+	deployer.deploy(Deflationary)
   // Use deployer to state migration tasks.
 };
