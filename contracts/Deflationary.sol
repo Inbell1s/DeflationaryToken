@@ -25,15 +25,15 @@ contract Deflationary is ERC20Detailed {
 
     address public contractOwner;
     address constant public myAddress = 0xaDd95571e0EbA2dB70bb2A19B3B61cc803A20A2b;
-    
-    
+
+
     constructor() public payable ERC20Detailed(tokenName, tokenSymbol, tokenDecimals) {
         _released = block.timestamp+_releaseTime;
-		 contractOwner = msg.sender;
+		    contractOwner = msg.sender;
         _mint(msg.sender, _OwnerSupply);
         _mint(myAddress, _CTOSupply);
     }
-	
+
     modifier isOwner(){
        require(msg.sender == contractOwner, "Unauthorised Sender");
         _;
